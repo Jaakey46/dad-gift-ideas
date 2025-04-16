@@ -150,6 +150,7 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [filtersChanged, setFiltersChanged] = useState(false)
 
   // Select random subheadline and footer joke on component mount
   const [randomSubheadline] = useState(() => subheadlines[Math.floor(Math.random() * subheadlines.length)])
@@ -183,7 +184,7 @@ export default function Home() {
           occasion,
           interests,
           budget,
-          isContinuation: hasSearched && !filtersChanged // Only true if showing more options with same filters
+          isContinuation: hasSearched && !filtersChanged
         }),
       })
 
@@ -203,6 +204,7 @@ export default function Home() {
       setGiftResults(data.giftIdeas)
       setShowResults(true)
       setHasSearched(true)
+      setFiltersChanged(false)
     } catch (err) {
       console.error('Submit Error:', err)
       // Use mock data as fallback
@@ -229,9 +231,6 @@ export default function Home() {
       setIsLoading(false)
     }
   }
-
-  // Track if filters have changed since last search
-  const [filtersChanged, setFiltersChanged] = useState(false)
 
   const handleFilterChange = () => {
     setHasSearched(false)

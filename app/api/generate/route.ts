@@ -5,7 +5,7 @@ const TOGETHER_API_URL = 'https://api.together.xyz/inference'
 
 export async function POST(request: Request) {
   try {
-    const { occasion, interests, budget, isContinuation } = await request.json()
+    const { occasion, interests, budget, isContinuation = false } = await request.json()
     console.log('Received request:', { occasion, interests, budget, isContinuation })
 
     if (!TOGETHER_API_KEY) {
@@ -15,38 +15,24 @@ export async function POST(request: Request) {
       )
     }
 
-    // Different prompts for initial request vs continuation
-    const prompt = isContinuation 
-      ? `Generate 6 more unique and different gift ideas for a dad, different from previous suggestions but still based on:
-        - Occasion: ${occasion || 'any occasion'}
-        - Interests: ${interests || 'general interests'}
-        - Budget: ${budget || 'flexible budget'}
-        
-        Format as JSON array with:
-        - title
-        - description (humorous)
-        - amazonSearch
-        - priceRange
-        - interests (array)
-        - occasions (array)`
-      : `Generate 6 unique and thoughtful gift ideas for a dad based on these criteria:
-        - Occasion: ${occasion || 'any occasion'}
-        - Interests: ${interests || 'general interests'}
-        - Budget: ${budget || 'flexible budget'}
-        
-        For each gift idea, provide:
-        1. A creative title
-        2. A brief, humorous description
-        3. A specific Amazon product name to search for
-        4. A price range that matches the budget
-        
-        Format the response as a JSON array with these fields:
-        - title
-        - description
-        - amazonSearch
-        - priceRange
-        - interests (array of relevant interests)
-        - occasions (array of relevant occasions)`
+    const prompt = `Generate 6 unique and thoughtful gift ideas for a dad based on these criteria:
+    - Occasion: ${occasion || 'any occasion'}
+    - Interests: ${interests || 'general interests'}
+    - Budget: ${budget || 'flexible budget'}
+    
+    For each gift idea, provide:
+    1. A creative title
+    2. A brief, humorous description
+    3. A specific Amazon product name to search for
+    4. A price range that matches the budget
+    
+    Format the response as a JSON array with these fields:
+    - title
+    - description
+    - amazonSearch
+    - priceRange
+    - interests (array of relevant interests)
+    - occasions (array of relevant occasions)`
 
     console.log('Making API request to Together.ai...')
     const response = await fetch(TOGETHER_API_URL, {
@@ -58,11 +44,11 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
         prompt,
-        max_tokens: isContinuation ? 800 : 1200, // We can use fewer tokens for continuation
-        temperature: isContinuation ? 0.8 : 0.7, // Slightly higher temperature for more variety in continuations
+        max_tokens: isContinuation ? 800 : 1200,
+        temperature: isContinuation ? 0.8 : 0.7,
         top_p: 0.9,
         top_k: 50,
-        repetition_penalty: isContinuation ? 1.2 : 1.1, // Higher penalty to avoid repeating previous ideas
+        repetition_penalty: isContinuation ? 1.2 : 1.1,
         stop: ['</s>', '```'],
       }),
     })
@@ -113,7 +99,7 @@ export async function POST(request: Request) {
       )
     }
   } catch (error) {
-    console.error('Error:', error)
+    console.error('General error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

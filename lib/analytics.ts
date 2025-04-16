@@ -1,8 +1,13 @@
+import { event } from './gtag'
+
 // Analytics utility functions
 export const trackEvent = (eventName: string, properties: Record<string, any>) => {
-  // In a real implementation, you would send this to your analytics service
-  // For now, we'll just log to console
-  console.log('Analytics Event:', eventName, properties)
+  event({
+    action: eventName,
+    category: 'User Interaction',
+    label: JSON.stringify(properties),
+    value: properties.value
+  })
 }
 
 export const trackFilterClick = (filterType: string, value: string) => {
