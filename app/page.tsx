@@ -320,7 +320,7 @@ export default function Home() {
 
   const getAmazonSearchUrl = (searchTerm: string) => {
     trackGiftClick(searchTerm)
-    return `https://www.amazon.com/s?k=${encodeURIComponent(searchTerm)}`
+    return `https://www.amazon.com/s?k=${encodeURIComponent(searchTerm)}&tag=dadgiftidea-20`
   }
 
   return (
@@ -479,6 +479,9 @@ export default function Home() {
         <footer className="text-center text-gray-600 mt-12">
           <p>© {new Date().getFullYear()} What Should I Get My Dad? | The ultimate dad gift finder</p>
           <p className="text-sm mt-2">{randomFooterJoke}</p>
+          <p className="text-xs mt-4 text-gray-500 max-w-xl mx-auto">
+            As an Amazon Associate, we earn from qualifying purchases. This means we may earn a commission if you click on certain links and make a purchase.
+          </p>
         </footer>
       </div>
     </main>
