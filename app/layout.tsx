@@ -3,9 +3,20 @@ import './globals.css'
 import Script from 'next/script'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'Dad Gift Finder | Perfect Gift Ideas',
+  description: 'Find thoughtful gifts for dad - from tech and tools to sports and BBQ. Personalized gift suggestions for Father\'s Day, birthdays, Christmas and more. Expert gift recommendations for every budget.',
+  keywords: 'dad gifts, father\'s day gifts, gifts for dad, dad birthday gifts, what to get dad, dad christmas gifts',
+  openGraph: {
+    title: 'Dad Gift Finder | Perfect Gift Ideas',
+    description: 'Find thoughtful gifts for dad - personalized suggestions for every interest and budget.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Dad Gift Finder | Perfect Gift Ideas',
+    description: 'Find thoughtful gifts for dad - personalized suggestions for every interest and budget.',
+  },
+  generator: 'Next.js',
 }
 
 export default function RootLayout({

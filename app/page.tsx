@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Gift, Search, ShoppingBag, Loader2 } from "lucide-react"
+import { Gift, Search, ShoppingBag, Loader2, Music, Wrench, Coffee, Tv, Dumbbell, Shirt, Utensils, Gamepad, Camera, Tent, Watch, Headphones } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -102,30 +102,30 @@ const mockGiftIdeas: GiftIdea[] = [
 
 // Rotating subheadlines
 const subheadlines = [
-  "Finding the perfect gift for the man who has everything (except maybe a sense of style)",
-  "Because another tie just isn't going to cut it this year",
-  "For the dad who says he doesn't want anything but secretly hopes you got him something cool",
-  "Gift ideas that won't end up in his 'drawer of forgotten presents'",
-  "Help your dad upgrade from 'World's Best Dad' mug to something he'll actually use",
-  "Turning dad jokes into dad gifts, one scroll at a time",
-  "Making up for last year's socks",
-  "Because he's still talking about that mug you got him in 2017",
-  "Let's make this year less 'meh' and more 'whoa!'",
-  "He said 'Don't get me anything' — we translated that to 'Surprise me'",
+  "Because 'I don't need anything' really means 'Surprise me'",
+  "For the dad who has everything (except another tie)",
+  "Better than the 'World's Best Dad' mug he got last year",
+  "Gifts that won't end up in the Famous Dad Drawer of Forgotten Presents",
+  "Because even dad jokes deserve better gifts than socks",
+  "Helping you nail the perfect gift, no hammer required",
+  "From 'meh' to 'wow' - dad-approved gift ideas",
+  "Gift ideas that'll make him prouder than his lawn",
+  "For the man who taught you everything, except gift-giving",
+  "Gifts worth more dad jokes than usual"
 ]
 
 // Rotating footer jokes
 const footerJokes = [
-  "We don't guarantee your dad will like these gifts, but we do guarantee he'll pretend to.",
-  "If your dad says he doesn't like his gift, remind him you inherited your taste from him.",
-  "Our gifts are dad-tested, child-approved, and mom-tolerated.",
-  "Perfect for the man who taught you everything you know (except how to pick good gifts).",
-  "Because the best gift is your love and appreciation... but these are pretty good too.",
-  "We tested these gifts on real dads. The groans were glorious.",
-  "Disclaimer: may cause spontaneous backyard grilling",
-  "Side effects may include unsolicited dad advice",
-  "He'll pretend to like it — we make sure he actually will",
-  "Perfect for Father's Day or Random Tuesday",
+  "Dad-tested, child-approved, mom-tolerated",
+  "Warning: May cause excessive dad jokes and random BBQ sessions",
+  "60% of the time, these gifts work every time",
+  "No ties were harmed in the making of these suggestions",
+  "Satisfaction guaranteed* (*Terms and conditions set by dad)",
+  "Powered by dad jokes and grilling wisdom",
+  "Results may include spontaneous lawn mowing",
+  "Side effects: Increased dad joke frequency",
+  "Our gifts speak dad's love language: power tools",
+  "Making dads smile since their last 'Hi Hungry, I'm Dad' joke"
 ]
 
 // Modify the popularTags array to remove one tag
@@ -140,6 +140,50 @@ const popularTags = [
   "Grooming",
   "Humor"
 ]
+
+// Add a function to get the appropriate icon based on interests
+const getGiftIcon = (interests: string[]) => {
+  // Sports-related keywords
+  const sportsKeywords = ['golf', 'running', 'biking', 'sports', 'fitness', 'workout', 'exercise']
+  
+  // Check if any interest is sports-related
+  const isSportsRelated = interests.some(interest => 
+    sportsKeywords.some(keyword => 
+      interest.toLowerCase().includes(keyword.toLowerCase())
+    )
+  )
+  
+  if (isSportsRelated) {
+    return <Dumbbell className="w-12 h-12 text-gray-600" />
+  }
+
+  // Map interests to icons
+  const interestIconMap: { [key: string]: React.ReactNode } = {
+    'Music': <Music className="w-12 h-12 text-gray-600" />,
+    'Tools': <Wrench className="w-12 h-12 text-gray-600" />,
+    'Coffee': <Coffee className="w-12 h-12 text-gray-600" />,
+    'Tech': <Tv className="w-12 h-12 text-gray-600" />,
+    'Fashion': <Shirt className="w-12 h-12 text-gray-600" />,
+    'BBQ': <Utensils className="w-12 h-12 text-gray-600" />,
+    'Gaming': <Gamepad className="w-12 h-12 text-gray-600" />,
+    'Photography': <Camera className="w-12 h-12 text-gray-600" />,
+    'Outdoors': <Tent className="w-12 h-12 text-gray-600" />,
+    'Luxury': <Watch className="w-12 h-12 text-gray-600" />,
+    'Audio': <Headphones className="w-12 h-12 text-gray-600" />
+  }
+
+  // Find the first matching interest that has an icon
+  for (const interest of interests) {
+    for (const [key, icon] of Object.entries(interestIconMap)) {
+      if (interest.toLowerCase().includes(key.toLowerCase())) {
+        return icon
+      }
+    }
+  }
+
+  // Default icon if no matches
+  return <Gift className="w-12 h-12 text-gray-600" />
+}
 
 export default function Home() {
   const [occasion, setOccasion] = useState<string>("")
@@ -158,16 +202,42 @@ export default function Home() {
   const [randomFooterJoke] = useState(() => footerJokes[Math.floor(Math.random() * footerJokes.length)])
 
   const handleTagClick = (tag: string) => {
+    // Update selected tags
     const newTags = selectedTags.includes(tag)
       ? selectedTags.filter(t => t !== tag)
       : [...selectedTags, tag]
-    
     setSelectedTags(newTags)
-    // Keep existing interests and add the new tag
-    const existingInterests = interests.split(',').filter(i => i.trim())
-    const allInterests = [...new Set([...existingInterests, ...newTags])]
-    setInterests(allInterests.join(', '))
+    
+    // Parse existing interests, removing empty strings and trimming whitespace
+    const existingInterests = interests
+      .split(',')
+      .map(i => i.trim())
+      .filter(i => i.length > 0)
+    
+    // Create a Set to remove duplicates
+    const uniqueInterests = new Set([...existingInterests])
+    
+    // Add or remove the clicked tag
+    if (selectedTags.includes(tag)) {
+      uniqueInterests.delete(tag)
+    } else {
+      uniqueInterests.add(tag)
+    }
+    
+    // Convert back to string
+    setInterests(Array.from(uniqueInterests).join(', '))
     trackFilterClick('interest', tag)
+  }
+
+  const handleInterestsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInterests(e.target.value)
+    // Update selected tags based on manual input
+    const inputTags = e.target.value
+      .split(',')
+      .map(t => t.trim())
+      .filter(t => t.length > 0)
+    setSelectedTags(inputTags.filter(tag => popularTags.includes(tag)))
+    handleFilterChange()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -311,10 +381,7 @@ export default function Home() {
                 id="interests"
                 placeholder="e.g., golf, grilling, fishing, technology"
                 value={interests}
-                onChange={(e) => {
-                  setInterests(e.target.value)
-                  handleFilterChange()
-                }}
+                onChange={handleInterestsChange}
               />
               <div className="flex flex-wrap gap-2 mt-3">
                 {popularTags.map((tag) => (
@@ -339,7 +406,7 @@ export default function Home() {
 
             <Button 
               type="submit" 
-              className="w-full bg-sky-500 hover:bg-orange-500"
+              className="w-full bg-sky-500 hover:bg-sky-600"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -366,53 +433,45 @@ export default function Home() {
 
         {/* Results Section */}
         {showResults && (
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Perfect Gifts For Your Dad</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {giftResults.map((gift, index) => (
-                <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow border-amber-100">
-                  <CardHeader className="p-0">
-                    <div className="relative h-48 w-full bg-gray-100 flex items-center justify-center overflow-hidden">
-                      {gift.imageUrl ? (
-                        <Image
-                          src={gift.imageUrl}
-                          alt={gift.title}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                      ) : (
-                        <Gift className="h-16 w-16 text-gray-400" />
-                      )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            {giftResults.map((gift, index) => (
+              <Card key={index} className="flex flex-col h-full">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-sky-600">{gift.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <div className="w-full h-32 mb-4 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="flex flex-col items-center text-center w-full px-4 h-full py-4">
+                      {getGiftIcon(gift.interests)}
+                      <span className="text-sm text-gray-500 mt-2 truncate w-full">{gift.interests[0] || 'Gift'}</span>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <CardTitle className="text-xl mb-2">{gift.title}</CardTitle>
-                    <p className="text-gray-600 mb-4">{gift.description}</p>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {gift.interests?.map((interest: string, i: number) => (
-                        <span key={i} className="px-2 py-1 bg-sky-100 text-sky-700 rounded-full text-xs">
-                          {interest}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-sm text-gray-500 mb-4">
-                      Price Range: {gift.priceRange?.[0] || 'Not specified'}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="p-6 pt-0">
-                    <Button
-                      className="w-full bg-amber-500 hover:bg-amber-600"
-                      onClick={() => window.open(getAmazonSearchUrl(gift.amazonSearch), '_blank')}
-                    >
-                      <ShoppingBag className="mr-2 h-4 w-4" />
-                      Find on Amazon
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
+                  </div>
+                  <p className="text-gray-600 mb-4">{gift.description}</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {gift.interests.map((interest, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-1 bg-sky-100 text-sky-600 rounded-full text-sm"
+                      >
+                        {interest}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Price Range: {Array.isArray(gift.priceRange) ? gift.priceRange.join(' - ') : gift.priceRange}
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button
+                    className="w-full bg-[#FF9900] hover:bg-[#e68a00]"
+                    onClick={() => window.open(getAmazonSearchUrl(gift.amazonSearch), '_blank')}
+                  >
+                    <ShoppingBag className="w-4 h-4 mr-2" />
+                    Find on Amazon
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
           </div>
         )}
 
