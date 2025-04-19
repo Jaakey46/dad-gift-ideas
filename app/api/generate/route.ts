@@ -3,6 +3,12 @@ import { NextResponse } from 'next/server'
 const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY
 const TOGETHER_API_URL = 'https://api.together.xyz/inference'
 
+// Helper function to generate Unsplash image URL
+const generateImageUrl = (title: string) => {
+  const searchQuery = encodeURIComponent(title.replace(/[^a-zA-Z0-9 ]/g, '').trim())
+  return `https://source.unsplash.com/featured/400x300/?${searchQuery}`
+}
+
 export async function POST(request: Request) {
   try {
     const { occasion, interests, budget, isContinuation = false } = await request.json()
@@ -21,16 +27,22 @@ export async function POST(request: Request) {
     - Budget: ${budget || 'flexible budget'}
     
     For each gift idea, provide:
-    1. A creative title
+    1. A clear, descriptive product name (e.g., "Bluetooth BBQ Thermometer" or "Noise-Canceling Headphones")
     2. A brief, humorous description
     3. A specific Amazon product name to search for
     4. A price range that matches the budget
     
+    Important rules:
+    - Product names should be clear and descriptive, not humorous
+    - Only suggest real, standalone products commonly found on Amazon
+    - No fictional product combinations or kits
+    - Keep the humor in the description only
+    
     Format the response as a JSON array with these fields:
-    - title
-    - description
-    - amazonSearch
-    - priceRange
+    - title (clear product name)
+    - description (humorous description)
+    - amazonSearch (specific product name for Amazon search)
+    - priceRange (array of price ranges)
     - interests (array of relevant interests)
     - occasions (array of relevant occasions)`
 
@@ -84,8 +96,15 @@ export async function POST(request: Request) {
         console.log('Extracted JSON string:', jsonStr)
         
         const giftIdeas = JSON.parse(jsonStr)
-        console.log('Successfully parsed gift ideas:', giftIdeas)
-        return NextResponse.json({ giftIdeas })
+        
+        // Add image URLs to each gift idea
+        const giftIdeasWithImages = giftIdeas.map((gift: any) => ({
+          ...gift,
+          imageUrl: generateImageUrl(gift.title)
+        }))
+        
+        console.log('Successfully parsed gift ideas with images:', giftIdeasWithImages)
+        return NextResponse.json({ giftIdeas: giftIdeasWithImages })
       } catch (parseError) {
         console.error('Error parsing JSON:', parseError)
         console.error('JSON string that failed to parse:', jsonStr)

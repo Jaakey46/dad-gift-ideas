@@ -21,6 +21,7 @@ interface GiftIdea {
   priceRange: string[]
   interests: string[]
   occasions: string[]
+  imageUrl?: string
 }
 
 // Fallback mock gift ideas
@@ -162,7 +163,10 @@ export default function Home() {
       : [...selectedTags, tag]
     
     setSelectedTags(newTags)
-    setInterests(newTags.join(", "))
+    // Keep existing interests and add the new tag
+    const existingInterests = interests.split(',').filter(i => i.trim())
+    const allInterests = [...new Set([...existingInterests, ...newTags])]
+    setInterests(allInterests.join(', '))
     trackFilterClick('interest', tag)
   }
 
@@ -369,8 +373,18 @@ export default function Home() {
               {giftResults.map((gift, index) => (
                 <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow border-amber-100">
                   <CardHeader className="p-0">
-                    <div className="relative h-48 w-full bg-gray-100 flex items-center justify-center">
-                      <Gift className="h-16 w-16 text-gray-400" />
+                    <div className="relative h-48 w-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                      {gift.imageUrl ? (
+                        <Image
+                          src={gift.imageUrl}
+                          alt={gift.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                      ) : (
+                        <Gift className="h-16 w-16 text-gray-400" />
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent className="p-6">
