@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 
 const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY
 const TOGETHER_API_URL = 'https://api.together.xyz/inference'
-const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY
 
 // Define the GiftIdea type
 interface GiftIdea {
@@ -12,7 +11,7 @@ interface GiftIdea {
   priceRange: string[]
   interests: string[]
   occasions: string[]
-  imageUrl?: string
+  imageUrl: string
 }
 
 // Fallback mock gift ideas
@@ -23,7 +22,8 @@ const mockGiftIdeas: GiftIdea[] = [
     amazonSearch: "Wireless Meat Thermometer for Grilling",
     priceRange: ["$25-$50"],
     interests: ["BBQ", "Tech"],
-    occasions: ["Father's Day", "Birthday", "Christmas"]
+    occasions: ["Father's Day", "Birthday", "Christmas"],
+    imageUrl: "/gift-placeholder.jpg"
   },
   {
     title: "Premium Tool Belt",
@@ -31,7 +31,8 @@ const mockGiftIdeas: GiftIdea[] = [
     amazonSearch: "Professional Tool Belt",
     priceRange: ["$30-$60"],
     interests: ["Tools", "DIY"],
-    occasions: ["Father's Day", "Christmas", "Birthday"]
+    occasions: ["Father's Day", "Christmas", "Birthday"],
+    imageUrl: "/gift-placeholder.jpg"
   },
   {
     title: "Deluxe Coffee Station",
@@ -39,7 +40,8 @@ const mockGiftIdeas: GiftIdea[] = [
     amazonSearch: "Home Coffee Bar Station",
     priceRange: ["$50-$100"],
     interests: ["Coffee", "Luxury"],
-    occasions: ["Christmas", "Birthday", "Father's Day"]
+    occasions: ["Christmas", "Birthday", "Father's Day"],
+    imageUrl: "/gift-placeholder.jpg"
   },
   {
     title: "Smart Home Starter Kit",
@@ -47,7 +49,8 @@ const mockGiftIdeas: GiftIdea[] = [
     amazonSearch: "Smart Home Hub Starter Kit",
     priceRange: ["$75-$150"],
     interests: ["Tech", "Gadgets"],
-    occasions: ["Christmas", "Birthday", "Father's Day"]
+    occasions: ["Christmas", "Birthday", "Father's Day"],
+    imageUrl: "/gift-placeholder.jpg"
   },
   {
     title: "Personalized Grilling Set",
@@ -55,7 +58,8 @@ const mockGiftIdeas: GiftIdea[] = [
     amazonSearch: "Personalized BBQ Grilling Tools Set",
     priceRange: ["$40-$80"],
     interests: ["BBQ", "Outdoors"],
-    occasions: ["Father's Day", "Birthday", "Christmas"]
+    occasions: ["Father's Day", "Birthday", "Christmas"],
+    imageUrl: "/gift-placeholder.jpg"
   },
   {
     title: "Noise-Canceling Headphones",
@@ -63,107 +67,10 @@ const mockGiftIdeas: GiftIdea[] = [
     amazonSearch: "Premium Noise Canceling Headphones",
     priceRange: ["$100-$200"],
     interests: ["Tech", "Music"],
-    occasions: ["Birthday", "Christmas", "Father's Day"]
+    occasions: ["Birthday", "Christmas", "Father's Day"],
+    imageUrl: "/gift-placeholder.jpg"
   }
 ]
-
-// Helper function to generate image search term
-const generateImageSearchTerm = (title: string): string => {
-  // Remove any special characters and extra spaces
-  const cleanTitle = title
-    .replace(/[^a-zA-Z0-9 ]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  // Map of specific product categories to better search terms
-  const searchTermMap: { [key: string]: string } = {
-    'BBQ': 'barbecue grill cooking',
-    'Golf': 'golf club sport',
-    'Thermometer': 'digital thermometer cooking',
-    'Tool Set': 'professional tools workshop',
-    'Watch': 'luxury watch wrist',
-    'Headphones': 'premium headphones audio',
-    'Camera': 'professional camera photography',
-    'Knife': 'premium knife kitchen',
-    'Grill': 'outdoor grill bbq',
-    'Coffee': 'coffee maker brewing',
-    'Speaker': 'bluetooth speaker audio',
-    'Wallet': 'leather wallet mens',
-    'Sunglasses': 'mens sunglasses fashion',
-    'Bag': 'mens leather bag'
-  };
-
-  // Check if the title contains any of our mapped terms
-  for (const [key, value] of Object.entries(searchTermMap)) {
-    if (cleanTitle.toLowerCase().includes(key.toLowerCase())) {
-      return value;
-    }
-  }
-
-  // If no specific mapping, use the cleaned title + some context
-  return cleanTitle + ' product photography';
-}
-
-// Helper function to generate reliable Unsplash image URLs
-const generateUnsplashUrl = (searchTerm: string): string => {
-  try {
-    // Default categories for fallback
-    const defaultCategories = ['gift', 'gadget', 'tool', 'hobby', 'lifestyle'];
-    
-    // Clean and prepare keywords
-    const keywords = searchTerm
-      .toLowerCase()
-      .replace(/[^\w\s]/g, '')         // Remove punctuation
-      .split(' ')                       // Split into individual words
-      .filter(w => w.length > 2)        // Remove very short/common words
-      .slice(0, 3)                      // Limit to 3 keywords max
-      .join(',');
-    
-    // If we have valid keywords, use them; otherwise use random default category
-    if (keywords.length > 0) {
-      return `https://source.unsplash.com/800x600/?${keywords}`;
-    } else {
-      const randomCategory = defaultCategories[Math.floor(Math.random() * defaultCategories.length)];
-      return `https://source.unsplash.com/800x600/?${randomCategory}`;
-    }
-  } catch (error) {
-    console.error('Error generating Unsplash URL:', error);
-    return `https://source.unsplash.com/800x600/?gift`;
-  }
-}
-
-// Helper function to get image from Pixabay
-async function getPixabayImage(query: string): Promise<string> {
-  try {
-    if (!PIXABAY_API_KEY) {
-      console.warn('Pixabay API key not configured')
-      return '/gift-placeholder.jpg' // You should add a placeholder image in your public folder
-    }
-
-    // Clean and prepare the search query
-    const searchQuery = query
-      .toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .split(' ')
-      .filter(w => w.length > 2)
-      .slice(0, 2)
-      .join(' ')
-
-    const response = await fetch(
-      `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(searchQuery)}&image_type=photo&safesearch=true&per_page=3`
-    )
-
-    if (!response.ok) {
-      throw new Error(`Pixabay API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-    return data.hits?.[0]?.webformatURL || '/gift-placeholder.jpg'
-  } catch (error) {
-    console.error('Error fetching Pixabay image:', error)
-    return '/gift-placeholder.jpg'
-  }
-}
 
 // Extract budget range from string
 function extractBudgetRange(budget: string): { min: number; max: number } {
@@ -178,54 +85,151 @@ function extractBudgetRange(budget: string): { min: number; max: number } {
   return { min: 0, max: Infinity }
 }
 
-export async function POST(request: Request) {
+function cleanAndParseResponse(text: string): GiftIdea[] {
+  console.log('Cleaning and parsing response:', text)
+  
+  // If response is empty or too short, return mock data
+  if (!text || text.trim().length < 10) {
+    console.log('Response is empty or too short, using mock data')
+    return mockGiftIdeas
+  }
+
   try {
-    const { occasion, interests, budget, isContinuation = false } = await request.json()
-    console.log('Received request:', { occasion, interests, budget, isContinuation })
+    // First try to parse the entire response as JSON
+    const parsed = JSON.parse(text)
+    if (Array.isArray(parsed)) {
+      const validGifts = parsed.map(gift => ({
+        ...gift,
+        // Ensure all required fields are present and properly formatted
+        title: gift.title || '',
+        description: gift.description || '',
+        amazonSearch: gift.amazonSearch || gift.title || '',
+        priceRange: Array.isArray(gift.priceRange) ? gift.priceRange : ['$0', '$100'],
+        interests: Array.isArray(gift.interests) ? gift.interests : [],
+        occasions: Array.isArray(gift.occasions) ? gift.occasions : [],
+        imageUrl: '/gift-placeholder.jpg'
+      }))
 
-    if (!TOGETHER_API_KEY) {
-      return NextResponse.json(
-        { error: 'API key not configured' },
-        { status: 500 }
-      )
+      // If we have exactly 6 valid gifts, return them
+      if (validGifts.length === 6) {
+        return validGifts
+      }
     }
+  } catch (e) {
+    console.log('Failed to parse as JSON array, trying to clean and parse...')
+  }
 
-    // Extract budget constraints
-    const { min, max } = extractBudgetRange(budget)
-    const budgetConstraint = budget ? `Stay within budget: $0-$${max}. All gift suggestions MUST be under $${max}.` : ''
+  // Clean the text
+  let cleaned = text
+    .replace(/Example output:/g, '') // Remove example text
+    .replace(/^\s*\[\s*|\s*\]\s*$/g, '') // Remove outer brackets if present
+    .trim()
 
-    const prompt = isContinuation 
-      ? `Generate 6 more gift ideas similar to previous suggestions. These should be for a dad who likes ${interests || 'various activities'}, for ${occasion || 'any occasion'}.
+  // If cleaned text is empty, return mock data
+  if (!cleaned) {
+    console.log('Cleaned text is empty, using mock data')
+    return mockGiftIdeas
+  }
 
-Remember:
-- Use generic product names (no brands or bundles)
-- Keep descriptions light and fun
-- Match the interests and occasion
-${budgetConstraint}
+  // Split into individual objects
+  const objects = cleaned.split(/\}\s*,\s*\{|\}\s*\{/).map(obj => {
+    // Add back the curly braces if they were removed
+    if (!obj.startsWith('{')) obj = '{' + obj
+    if (!obj.endsWith('}')) obj = obj + '}'
+    return obj
+  })
 
-Output only a JSON array with this schema:
-{
-  "title": "",
-  "description": "",
-  "amazonSearch": "",
-  "priceRange": ["$25", "$50"],
-  "interests": [],
-  "occasions": []
-}`
-      : `Generate 6 unique and practical gift ideas for a dad, based on:
+  console.log('Found objects:', objects.length)
 
-- Occasion: ${occasion || 'any occasion'}
-- Interests: ${interests || 'general interests'}
-- Budget: ${budget || 'flexible'}
+  const validGiftIdeas: GiftIdea[] = []
+  
+  for (const obj of objects) {
+    try {
+      // Clean up the object string
+      const cleanedObj = obj
+        .replace(/\n/g, ' ') // Remove newlines
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .replace(/"\s*,\s*"/g, '","') // Fix spacing around commas
+        .replace(/"\s*:\s*"/g, '":"') // Fix spacing around colons
+        .replace(/"\s*:\s*\[/g, '":[') // Fix spacing around array colons
+        .replace(/\[\s*"/g, '["') // Fix spacing in arrays
+        .replace(/"\s*\]/g, '"]') // Fix spacing in arrays
+        .replace(/"\s*,\s*\[/g, '",[') // Fix spacing before arrays
+        .replace(/\]\s*,\s*"/g, '],"') // Fix spacing after arrays
+
+      const parsed = JSON.parse(cleanedObj)
+      
+      // Validate the object has required fields
+      if (
+        typeof parsed.title === 'string' &&
+        typeof parsed.description === 'string' &&
+        typeof parsed.amazonSearch === 'string' &&
+        Array.isArray(parsed.priceRange) &&
+        Array.isArray(parsed.interests) &&
+        Array.isArray(parsed.occasions)
+      ) {
+        validGiftIdeas.push({
+          ...parsed,
+          imageUrl: '/gift-placeholder.jpg'
+        })
+      }
+    } catch (e) {
+      console.log('Failed to parse object:', obj)
+    }
+  }
+
+  console.log('Successfully parsed gift ideas:', validGiftIdeas.length)
+
+  // If we have exactly 6 valid gifts, return them
+  if (validGiftIdeas.length === 6) {
+    return validGiftIdeas
+  }
+
+  // If we have more than 6 gifts, return the first 6
+  if (validGiftIdeas.length > 6) {
+    return validGiftIdeas.slice(0, 6)
+  }
+
+  // If we have less than 6 gifts, fill in with mock data
+  const remainingGifts = 6 - validGiftIdeas.length
+  const filledGifts = [...validGiftIdeas]
+  
+  // Add mock gifts until we have 6
+  for (let i = 0; i < remainingGifts; i++) {
+    filledGifts.push(mockGiftIdeas[i % mockGiftIdeas.length])
+  }
+
+  return filledGifts
+}
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json()
+    const { occasion, interests, budget, isContinuation } = body
+
+    // Set default values for empty fields
+    const defaultOccasion = occasion || "Birthday"
+    const defaultInterests = interests || "Tech, Tools, Sports"
+    const defaultBudget = budget || "Under $100"
+
+    // Extract budget range for price filtering
+    const budgetRange = extractBudgetRange(defaultBudget)
+    const maxPrice = budgetRange.max
+
+    // Generate prompt for the AI
+    const prompt = `Generate 6 unique and practical gift ideas for a dad, based on:
+- Occasion: ${defaultOccasion}
+- Interests: ${defaultInterests}
+- Budget: Under $${maxPrice}
 
 For each gift, return:
 1. A clear, generic product name (no brands, no made-up names, no bundles — just one real item)
 2. A short, light-hearted description (can be witty, but not confusing)
 3. A generic Amazon search term (same as the product name, no brands)
-4. A realistic price range ${budgetConstraint ? `under $${max}` : ''}
+4. A realistic price range under $${maxPrice}
 5. Matching interests and occasions (as arrays)
 
-${budgetConstraint}
+Stay within budget: $0-$${maxPrice}. All gift suggestions MUST be under $${maxPrice}.
 
 Examples of good product names:
 - "Camping Chair", "Digital Meat Thermometer", "Golf Practice Net", "BBQ Tool Set"
@@ -243,119 +247,83 @@ Output only a JSON array with this schema for each item:
   "occasions": []
 }`
 
-    console.log('Making API request to Together.ai...')
+    // Make API request to Together
     const response = await fetch(TOGETHER_API_URL, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${TOGETHER_API_KEY}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
         prompt,
-        max_tokens: isContinuation ? 800 : 1500,
-        temperature: isContinuation ? 0.8 : 0.7,
+        max_tokens: 1500,
+        temperature: 0.7,
         top_p: 0.9,
         top_k: 50,
-        repetition_penalty: isContinuation ? 1.2 : 1.1,
-        stop: ['</s>', '```'],
-      }),
+        repetition_penalty: 1.1,
+        stop: ['</s>', '```']
+      })
     })
 
     if (!response.ok) {
-      throw new Error(`Together.ai API Error: ${response.status} ${response.statusText}`)
+      throw new Error(`Together API error: ${response.status}`)
     }
 
     const data = await response.json()
-    console.log('API Response received:', data)
-    
-    try {
-      const outputText = data.output.choices[0].text
-      console.log('Raw output text:', outputText)
-      
-      // Clean and format the response text
-      const cleanResponse = outputText
-        // Remove numbered prefixes like "1.", "2.", etc.
-        .replace(/^\d+\.\s*/gm, '')
-        // Remove any "Example:" prefix
-        .replace(/^Example:\s*/i, '')
-        // Remove any comments
-        .replace(/\/\/.*$/gm, '')
-        // Ensure proper array formatting
-        .replace(/}\s*{/g, '},{')
-        .trim()
+    const rawOutput = data.output.choices[0].text
+    console.log('Raw output text:', rawOutput)
 
-      // Wrap in array brackets if not present
-      const jsonStr = cleanResponse.startsWith('[') ? cleanResponse : `[${cleanResponse}]`
-      
-      console.log('Cleaned JSON string:', jsonStr)
-      
-      const giftIdeas = JSON.parse(jsonStr)
-      
-      if (!Array.isArray(giftIdeas)) {
-        throw new Error('Invalid gift ideas format')
-      }
+    // Extract JSON string from the response
+    const jsonMatch = rawOutput.match(/\[[\s\S]*\]/)
+    const jsonString = jsonMatch ? jsonMatch[0] : '[]'
+    console.log('Extracted JSON string:', jsonString)
 
-      // Filter out any invalid items and take first 6
-      const validGiftIdeas = giftIdeas
-        .filter(gift => 
-          gift && 
-          typeof gift === 'object' && 
-          typeof gift.title === 'string' && 
-          gift.title.trim() !== ''
-        )
-        .slice(0, 6)
+    // Parse and clean the response
+    const giftIdeas = cleanAndParseResponse(jsonString)
 
-      // If we have less than 6 items, fill with mock data
-      let finalGiftIdeas = validGiftIdeas
-      if (validGiftIdeas.length < 6) {
-        // Get random items from mockGiftIdeas that aren't too similar to existing ideas
-        const mockIdeas = mockGiftIdeas
-          .filter((mock: GiftIdea) => !validGiftIdeas.some(valid => 
-            valid.title.toLowerCase().includes(mock.title.toLowerCase()) ||
-            mock.title.toLowerCase().includes(valid.title.toLowerCase())
-          ))
-          .sort(() => Math.random() - 0.5)
-          .slice(0, 6 - validGiftIdeas.length)
-
-        finalGiftIdeas = [...validGiftIdeas, ...mockIdeas]
-      }
-      
-      // Add image URLs to each gift idea using Pixabay
-      const giftIdeasWithImages = await Promise.all(
-        finalGiftIdeas.map(async (gift: any) => {
-          // Filter out gifts that exceed budget
-          if (max !== Infinity) {
-            const giftMax = parseInt(gift.priceRange[1].replace('$', ''))
-            if (giftMax > max) {
-              console.log(`Filtering out gift "${gift.title}" as it exceeds budget: $${giftMax} > $${max}`)
-              return null
-            }
-          }
-
-          console.log(`Fetching image for "${gift.title}" using search term "${gift.amazonSearch}"`)
-          const imageUrl = await getPixabayImage(gift.amazonSearch)
-          return {
-            ...gift,
-            imageUrl
-          }
-        })
-      )
-
-      // Filter out any null results (gifts that exceeded budget)
-      const filteredGiftIdeas = giftIdeasWithImages.filter(gift => gift !== null)
-
-      console.log('Successfully parsed gift ideas with images:', filteredGiftIdeas)
-      return NextResponse.json({ giftIdeas: filteredGiftIdeas })
-    } catch (error) {
-      console.error('Error processing response:', error)
+    // Validate the parsed gift ideas
+    if (!Array.isArray(giftIdeas) || giftIdeas.length === 0) {
+      console.error('Invalid gift ideas format:', giftIdeas)
       return NextResponse.json(
-        { error: 'Failed to process gift ideas' },
+        { error: 'Failed to generate valid gift ideas' },
         { status: 500 }
       )
     }
+
+    // Ensure each gift has all required fields and valid data
+    const validatedGiftIdeas = giftIdeas.map(gift => ({
+      ...gift,
+      title: gift.title || '',
+      description: gift.description || '',
+      amazonSearch: gift.amazonSearch || gift.title || '',
+      priceRange: Array.isArray(gift.priceRange) ? gift.priceRange : ['$0', '$100'],
+      interests: Array.isArray(gift.interests) ? gift.interests : [],
+      occasions: Array.isArray(gift.occasions) ? gift.occasions : [],
+      imageUrl: '/gift-placeholder.jpg'
+    }))
+
+    // Filter gifts based on price only
+    const filteredGiftIdeas = validatedGiftIdeas.filter(gift => {
+      // Extract the maximum price from the price range
+      const maxGiftPrice = Math.max(
+        ...gift.priceRange.map(price => {
+          const match = price.match(/\$(\d+)/)
+          return match ? parseInt(match[1]) : 0
+        })
+      )
+      return maxGiftPrice <= maxPrice
+    })
+
+    // If we have no gifts after price filtering, return all gifts
+    const finalGiftIdeas = filteredGiftIdeas.length > 0 ? filteredGiftIdeas : validatedGiftIdeas
+
+    return NextResponse.json({ 
+      giftIdeas: finalGiftIdeas,
+      hasMore: true // Always indicate there are more options available
+    })
   } catch (error) {
-    console.error('General error:', error)
+    console.error('Error in generate route:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
