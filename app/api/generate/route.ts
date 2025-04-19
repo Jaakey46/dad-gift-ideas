@@ -273,14 +273,22 @@ Output only a JSON array with this schema for each item:
       const outputText = data.output.choices[0].text
       console.log('Raw output text:', outputText)
       
-      // Find the JSON array in the response
-      const jsonMatch = outputText.match(/\[[\s\S]*\]/)
-      if (!jsonMatch) {
-        throw new Error('No JSON array found in response')
-      }
+      // Clean and format the response text
+      const cleanResponse = outputText
+        // Remove numbered prefixes like "1.", "2.", etc.
+        .replace(/^\d+\.\s*/gm, '')
+        // Remove any "Example:" prefix
+        .replace(/^Example:\s*/i, '')
+        // Remove any comments
+        .replace(/\/\/.*$/gm, '')
+        // Ensure proper array formatting
+        .replace(/}\s*{/g, '},{')
+        .trim()
+
+      // Wrap in array brackets if not present
+      const jsonStr = cleanResponse.startsWith('[') ? cleanResponse : `[${cleanResponse}]`
       
-      const jsonStr = jsonMatch[0]
-      console.log('Extracted JSON string:', jsonStr)
+      console.log('Cleaned JSON string:', jsonStr)
       
       const giftIdeas = JSON.parse(jsonStr)
       
